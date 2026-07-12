@@ -1,9 +1,3 @@
-# Paris Events Pipeline — DevOps Project
-
-![GitHub Actions](https://github.com/Vboxmoh/Paris-events-project/actions/workflows/deploy.yml/badge.svg)
-
----
-
 ## À l'attention de l'équipe numérique de Paris je t'aime
 
 Je m'appelle Mohamed Mondher, ingénieur DevOps jeune diplômé basé à Paris. En découvrant votre offre **Alternant DevOps & Automatisation**, j'ai voulu vous montrer concrètement ce que je sais construire plutôt que de vous envoyer une lettre classique.
