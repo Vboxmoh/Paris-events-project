@@ -1,0 +1,91 @@
+# ─────────────────────────────────────────────
+# Pipeline GitHub Actions — Paris Events Pipeline
+# lint → build → deploy
+# ─────────────────────────────────────────────
+
+name: CI/CD — Paris Events Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  # ── STAGE 1 — LINT ────────────────────────
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: Run flake8
+        run: flake8 app/ --max-line-length=120 --exclude=app/__pycache__
+
+  # ── STAGE 2 — BUILD ───────────────────────
+  build:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          push: true
+          tags: |
+            ghcr.io/vboxmoh/paris-events:latest
+            ghcr.io/vboxmoh/paris-events:${{ github.sha }}
+
+  # ── STAGE 3 — DEPLOY ──────────────────────
+  deploy:
+    name: Deploy to AWS EC2
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker pull ghcr.io/vboxmoh/paris-events:latest
+            docker stop paris-app || true
+            docker rm paris-app || true
+            docker stop paris-redis || true
+            docker rm paris-redis || true
+            docker network create paris-net || true
+            docker run -d --name paris-redis --network paris-net redis:7-alpine
+            docker run -d \
+              --name paris-app \
+              --network paris-net \
+              --restart always \
+              -p 5000:5000 \
+              -e REDIS_HOST=paris-redis \
+              -e REDIS_PORT=6379 \
+              -e DB_PATH=/app/data/events.db \
+              -e CACHE_TTL=3600 \
+              -v paris-data:/app/data \
+              ghcr.io/vboxmoh/paris-events:latest
+            echo "✅ Déploiement terminé"

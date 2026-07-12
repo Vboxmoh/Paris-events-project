@@ -1,0 +1,23 @@
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+
+# Python
+__pycache__/
+*.pyc
+app/__pycache__/
+
+# Clés SSH
+*.pem
+
+# Environnement
+.env
+
+# Data SQLite
+*.db
+
+# OS
+.DS_Store
+Thumbs.db

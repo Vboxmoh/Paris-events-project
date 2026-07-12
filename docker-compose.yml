@@ -1,0 +1,43 @@
+# ─────────────────────────────────────────────
+# Docker Compose — Environnement local
+# App Flask + Redis cache
+# ─────────────────────────────────────────────
+
+version: '3.8'
+
+services:
+
+  # ── REDIS ─────────────────────────────────
+  # Cache des événements OpenAgenda
+  # Evite les appels API répétés
+  redis:
+    image: redis:7-alpine
+    container_name: paris-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ── APPLICATION ───────────────────────────
+  # Dashboard événements parisiens
+  app:
+    build: ./app
+    container_name: paris-app
+    ports:
+      - "5000:5000"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DB_PATH: /app/data/events.db
+      CACHE_TTL: 3600
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - app_data:/app/data
+
+volumes:
+  app_data:
