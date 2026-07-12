@@ -3,7 +3,6 @@ import sqlite3
 import redis
 import json
 import os
-import time
 from datetime import datetime
 from flask import Flask, render_template
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
@@ -260,6 +259,7 @@ def health():
 def api_events():
     """API REST — retourne les événements en JSON"""
     return {'events': get_events(), 'count': len(get_events())}
+
 
 @app.route('/metrics')
 def metrics():
