@@ -3,8 +3,10 @@ import sqlite3
 import redis
 import json
 import os
+import time
 from datetime import datetime
 from flask import Flask, render_template
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
 app = Flask(__name__)
 
@@ -19,6 +21,30 @@ REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
 REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
 DB_PATH = os.getenv('DB_PATH', '/app/data/events.db')
 CACHE_TTL = int(os.getenv('CACHE_TTL', 3600))  # 1 heure
+
+# ─────────────────────────────────────────────
+# Métriques Prometheus
+# ─────────────────────────────────────────────
+REQUEST_COUNT = Counter(
+    'paris_events_requests_total',
+    'Nombre total de requêtes',
+    ['method', 'endpoint', 'status']
+)
+
+CACHE_HITS = Counter(
+    'paris_events_cache_hits_total',
+    'Nombre de cache hits Redis'
+)
+
+CACHE_MISSES = Counter(
+    'paris_events_cache_misses_total',
+    'Nombre de cache misses Redis'
+)
+
+REQUEST_LATENCY = Histogram(
+    'paris_events_request_latency_seconds',
+    'Temps de réponse des requêtes'
+)
 
 # ─────────────────────────────────────────────
 # Connexion Redis — cache des événements
@@ -156,11 +182,10 @@ def get_events():
     if REDIS_AVAILABLE:
         cached = cache.get(cache_key)
         if cached:
-            print("Cache HIT — données servies depuis Redis")
+            CACHE_HITS.inc()
             return json.loads(cached)
 
-    # Étape 2 — Cache MISS → appel API
-    print("Cache MISS — appel API OpenAgenda")
+    CACHE_MISSES.inc()
     raw_events = fetch_events_from_api()
 
     # Étape 3 — Normalise les données
@@ -235,6 +260,11 @@ def health():
 def api_events():
     """API REST — retourne les événements en JSON"""
     return {'events': get_events(), 'count': len(get_events())}
+
+@app.route('/metrics')
+def metrics():
+    """Endpoint Prometheus — expose les métriques de l'app"""
+    return generate_latest(), 200, {'Content-Type': CONTENT_TYPE_LATEST}
 
 
 if __name__ == '__main__':
