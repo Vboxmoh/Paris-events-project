@@ -1,4 +1,4 @@
-Projet for Paris Events Company
+Project for Paris Events Company
 
 > **Stack :** Python/Flask · Redis · SQLite · Docker · GitHub Actions · Terraform · AWS EC2 · Prometheus · Grafana
 
