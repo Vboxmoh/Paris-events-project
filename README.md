@@ -1,14 +1,4 @@
-## À l'attention de l'équipe numérique de Paris je t'aime
-
-Je m'appelle Mohamed Mondher, ingénieur DevOps jeune diplômé basé à Paris. En découvrant votre offre **Alternant DevOps & Automatisation**, j'ai voulu vous montrer concrètement ce que je sais construire plutôt que de vous envoyer une lettre classique.
-
-Ce projet simule un outil que votre équipe numérique pourrait utiliser au quotidien : un pipeline automatisé qui récupère les événements touristiques parisiens depuis l'API OpenAgenda, les met en cache, les affiche dans un dashboard et expose des métriques de supervision.
-
-J'ai volontairement gardé l'infrastructure légère et pragmatique — une seule EC2 AWS, Docker, GitHub Actions — parce que c'est ce qui correspond à la réalité d'une structure comme Paris je t'aime. Pas de Kubernetes, pas d'over-engineering.
-
-Ma proposition d'amélioration : un **système de cache Redis** qui réduit de 95% les appels à l'API OpenAgenda et divise le temps de réponse par 10 — avec des métriques visibles en temps réel sur Grafana.
-
-Je précise honnêtement que mon expérience cloud est principalement sur AWS. Je n'ai pas encore travaillé sur Azure mais j'ai déjà commencé à explorer la documentation et je suis prêt à basculer rapidement dessus en vous rejoignant.
+Projet for Paris Events Company
 
 > **Stack :** Python/Flask · Redis · SQLite · Docker · GitHub Actions · Terraform · AWS EC2 · Prometheus · Grafana
 
@@ -220,14 +210,3 @@ docker run -d --name grafana --network paris-net \
 cd terraform
 terraform destroy
 ```
-
----
-
-## Auteur
-
-**MONDHER Mohamed** — Ingénieur DevOps
-Paris, France
-
-- GitHub : [github.com/Vboxmoh](https://github.com/Vboxmoh)
-- Email : mohamedmondher62@gmail.com
-- Tél : 06 50 35 32 97
